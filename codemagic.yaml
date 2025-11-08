@@ -5,19 +5,20 @@ workflows:
     environment:
       flutter: stable
       java: 21
-      android-signing:
-        keystore: ./germplasmx-release.jks   # path relative to repo root
-        keystore-password: $KEYSTORE_PASSWORD # store this as an environment variable
-        key-alias: germplasmx
-        key-password: $KEY_PASSWORD          # store as env var
     scripts:
       - name: Get Flutter Dependencies
         script: |
           flutter pub get
-      - name: Build Android App Bundle & APK
+      - name: Build App Bundle and APK
         script: |
           flutter build appbundle --release
           flutter build apk --release
     artifacts:
       - build/app/outputs/bundle/release/app-release.aab
       - build/app/outputs/flutter-apk/app-release.apk
+    publishing:
+      android-signing:
+        keystore: ./germplasmx-release.jks
+        keystore-password: $KEYSTORE_PASSWORD
+        key-alias: germplasmx
+        key-password: $KEY_PASSWORD
