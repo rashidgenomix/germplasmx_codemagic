@@ -5,6 +5,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// ✅ Load keystore properties
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("android/key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.example.germplasmx"
     compileSdk = 35
@@ -13,7 +20,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        isCoreLibraryDesugaringEnabled = true //
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -21,27 +28,37 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.germplasmx"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
 
+    // ✅ Add release signing config
+    signingConfigs {
+        release {
+        minifyEnabled = false
+        shrinkResources = false
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+            // Optional ProGuard rules:
+            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig = signingConfigs.release // ✅ ensures even debug uses same key (optional)
         }
     }
 }
 
 dependencies {
-    // ✅ Add this line:
+    // ✅ Required for Java 8+ APIs
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
 
