@@ -1,15 +1,17 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// ✅ Load keystore properties
-def keystoreProperties = new Properties()
-def keystorePropertiesFile = rootProject.file("android/key.properties")
+// Load keystore properties (for local builds)
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("android/key.properties")
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -35,33 +37,38 @@ android {
         versionName = "1.0"
     }
 
-    // ✅ Add release signing config
-      signingConfigs {
-          release {
-              if (System.getenv()["CI"]) { // CI=true is exported by Codemagic
-                  storeFile file(System.getenv()["CM_KEYSTORE_PATH"])
-                  storePassword System.getenv()["CM_KEYSTORE_PASSWORD"]
-                  keyAlias System.getenv()["CM_KEY_ALIAS"]
-                  keyPassword System.getenv()["CM_KEY_PASSWORD"]
-              } else {
-                  keyAlias keystoreProperties['keyAlias']
-                  keyPassword keystoreProperties['keyPassword']
-                  storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-                  storePassword keystoreProperties['storePassword']
-              }
-          }
-      }
-      buildTypes {
-          release {
-              ...
-              signingConfig signingConfigs.release
-          }
-      }
-  }
+    signingConfigs {
+        create("release") {
+            if (System.getenv("CI") == "true") {
+                // Use Codemagic environment variables
+                storeFile = System.getenv("CM_KEYSTORE_PATH")?.let { file(it) }
+                storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("CM_KEY_ALIAS")
+                keyPassword = System.getenv("CM_KEY_PASSWORD")
+            } else {
+                // Use local key.properties file
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+                storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
+                storePassword = keystoreProperties["storePassword"] as String?
+            }
+        }
+    }
 
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+        getByName("debug") {
+            // Optional: sign debug builds with the same key
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+}
 
 dependencies {
-    // ✅ Required for Java 8+ APIs
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
 
