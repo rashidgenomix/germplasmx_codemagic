@@ -1,29 +1,23 @@
 workflows:
   android-release:
-    name: Android Release Build (APK + AAB)
+    name: Android Release Build
     max_build_duration: 60
     environment:
       flutter: stable
       java: 21
+      android-signing:
+        keystore: ./germplasmx-release.jks   # path relative to repo root
+        keystore-password: $KEYSTORE_PASSWORD # store this as an environment variable
+        key-alias: germplasmx
+        key-password: $KEY_PASSWORD          # store as env var
     scripts:
       - name: Get Flutter Dependencies
         script: |
           flutter pub get
-      - name: Build Android APK (.apk)
-        script: |
-          flutter build apk --release
-      - name: Build Android App Bundle (.aab)
+      - name: Build Android App Bundle & APK
         script: |
           flutter build appbundle --release
+          flutter build apk --release
     artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
       - build/app/outputs/bundle/release/app-release.aab
-    android-signing:
-      keystore: ./germplasmx-release.jks
-      keystore_password: Talha@2010
-      key_alias: germplasmx
-      key_password: Talha@2010
-    publishing:
-      email:
-        recipients:
-          - rashidrao7@gmail.com
+      - build/app/outputs/flutter-apk/app-release.apk
