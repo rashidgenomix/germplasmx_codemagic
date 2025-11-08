@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.germplasmx"
+        applicationId = "com.plantsciencetools.germplasmx"
         minSdk = flutter.minSdkVersion
         targetSdk = 35
         versionCode = 1
