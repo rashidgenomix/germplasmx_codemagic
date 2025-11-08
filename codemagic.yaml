@@ -19,20 +19,6 @@ workflows:
       - name: Build Android App Bundle
         script: |
           flutter build appbundle --release
-      - name: Set up key.properties
-        script: | 
-          cat >> "$CM_BUILD_DIR/project_directory/android/key.properties" <<EOF
-
-      storePassword=$CM_KEYSTORE_PASSWORD
-
-      keyPassword=$CM_KEY_PASSWORD
-
-      keyAlias=$CM_KEY_ALIAS
-
-      storeFile=$CM_KEYSTORE_PATH
-
-      EOF    
-
 
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
